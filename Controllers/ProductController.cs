@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace githubcicd;
 
@@ -32,6 +33,23 @@ public class ProductController : ControllerBase
         {
             return BadRequest(ex.Message);
         }
+    }
+
+    [HttpGet("db-test")]
+    public IActionResult TestDatabase()
+    {
+    try
+    {
+        var conn = _context.Database.GetDbConnection();
+        return Ok(new {
+            Database = conn.Database,
+            DataSource = conn.DataSource
+        });
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(ex.Message);
+    }
     }
 
 }
