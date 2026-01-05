@@ -1,0 +1,49 @@
+trigger:
+- main  # runs pipeline on pushes to main branch
+
+pool:
+  vmImage: 'windows-latest'  # or 'ubuntu-latest' if you prefer
+
+variables:
+  solution: '**/*.sln'
+  buildConfiguration: 'Release'
+
+steps:
+#Install .NET 10 SDK
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '10.x'
+
+#Restore NuGet packages
+- script: dotnet restore $(solution)
+  displayName: 'Restore NuGet packages'
+
+#Build the solution
+- script: dotnet build $(solution) --configuration $(buildConfiguration) --no-restore
+  displayName: 'Build solution'
+
+#Run tests
+- script: dotnet test $(solution) --configuration $(buildConfiguration) --no-build --verbosity normal
+  displayName: 'Run tests'
+
+#Publish the solution to artifacts
+- script: dotnet publish $(solution) -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)
+  displayName: 'Publish solution'
+
+#Publish artifacts in Azure DevOps
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+
+#Deploy to Azure Web App
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: 'CICDApp'                       # create this in DevOps project
+    appName: 'azuredevopscicidpipeline'                        # your new web app name
+    package: '$(Build.ArtifactStagingDirectory)/**/*.zip' # deploy all published files
+    deploymentMethod: 'auto'
+
+
