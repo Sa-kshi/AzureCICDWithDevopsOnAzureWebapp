@@ -2,7 +2,7 @@ trigger:
 - main  # runs pipeline on pushes to main branch
 
 pool:
-  vmImage: 'windows-latest'  # or 'ubuntu-latest' if you prefer
+  vmImage: 'ubuntu-latest'  # or 'ubuntu-latest' if you prefer
 
 variables:
   solution: '**/*.sln'
@@ -45,5 +45,4 @@ steps:
     appName: 'azuredevopscicidpipeline'                        # your new web app name
     package: '$(Build.ArtifactStagingDirectory)/**/*.zip' # deploy all published files
     deploymentMethod: 'auto'
-
-
+  
